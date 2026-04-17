@@ -1,0 +1,16 @@
+{
+  "name": "restaurant-reservation-mock-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mock API for restaurant reservation security and API testing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

@@ -1,0 +1,803 @@
+
+<!DOCTYPE html>
+<meta charset="UTF-8">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.app{display:flex;height:680px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-tertiary)}
+.sidebar{width:220px;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:16px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.logo{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.logo span{color:#1D9E75}
+.role-switch{display:flex;gap:4px;margin-top:10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:3px}
+.role-btn{flex:1;font-size:11px;padding:4px 6px;border:none;background:transparent;border-radius:6px;cursor:pointer;color:var(--color-text-secondary);font-family:var(--font-sans)}
+.role-btn.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border:0.5px solid var(--color-border-tertiary)}
+.nav{flex:1;padding:8px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--border-radius-md);cursor:pointer;font-size:13px;color:var(--color-text-secondary);margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;font-family:var(--font-sans)}
+.nav-item:hover{background:var(--color-background-secondary)}
+.nav-item.active{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500}
+.nav-icon{width:16px;height:16px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:14px 20px;background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.page-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.user-chip{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary)}
+.avatar{width:28px;height:28px;border-radius:50%;background:#9FE1CB;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#085041}
+.content{flex:1;padding:20px;overflow-y:auto}
+.screen{display:none}
+.screen.active{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 20px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.stat-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;color:var(--color-text-secondary)}
+.form-group input,.form-group select{padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)}
+.form-group textarea{padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);resize:none;height:60px;font-family:var(--font-sans)}
+.btn{padding:8px 16px;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary);font-family:var(--font-sans)}
+.btn:hover{background:var(--color-background-secondary)}
+.btn-primary{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.btn-primary:hover{background:#0F6E56}
+.btn-danger{background:#E24B4A;color:#fff;border-color:#E24B4A}
+.btn-danger:hover{background:#A32D2D}
+.table-list{width:100%;border-collapse:collapse}
+.table-list th{font-size:11px;color:var(--color-text-secondary);font-weight:500;padding:6px 10px;border-bottom:0.5px solid var(--color-border-tertiary);text-align:left}
+.table-list td{font-size:13px;padding:9px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.table-list tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-green{background:#EAF3DE;color:#3B6D11}
+.badge-amber{background:#FAEEDA;color:#854F0B}
+.badge-red{background:#FCEBEB;color:#A32D2D}
+.badge-blue{background:#E6F1FB;color:#185FA5}
+.story-bar{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.story-pill{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-secondary)}
+.story-pill.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.step-flow{display:flex;align-items:center;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.step.done{background:#EAF3DE;color:#3B6D11}
+.step.active{background:#1D9E75;color:#fff}
+.step.pending{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
+.step-arrow{font-size:10px;color:var(--color-text-tertiary)}
+.highlight-box{background:#E1F5EE;border:0.5px solid #5DCAA5;border-radius:var(--border-radius-md);padding:10px 14px;margin-bottom:12px;font-size:12px;color:#085041}
+.section-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px}
+.avail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.table-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px;text-align:center;cursor:pointer;transition:border-color 0.15s}
+.table-card:hover{border-color:#1D9E75}
+.table-card.selected{border-color:#1D9E75;background:#E1F5EE}
+.table-card .tc-name{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.table-card .tc-cap{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.table-card .tc-status{font-size:10px;margin-top:4px}
+.confirm-card{background:#E1F5EE;border:0.5px solid #5DCAA5;border-radius:var(--border-radius-lg);padding:16px 20px;text-align:center}
+.confirm-id{font-size:24px;font-weight:500;color:#085041;margin-bottom:4px}
+.confirm-sub{font-size:12px;color:#0F6E56}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.notif-item{display:flex;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.notif-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.notif-text{font-size:12px;color:var(--color-text-primary)}
+.notif-time{font-size:11px;color:var(--color-text-secondary)}
+</style>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">Table<span>Reserve</span></div>
+      <div class="role-switch">
+        <button class="role-btn active" onclick="switchRole('customer', this)">Customer</button>
+        <button class="role-btn" onclick="switchRole('staff', this)">Staff</button>
+        <button class="role-btn" onclick="switchRole('admin', this)">Admin</button>
+      </div>
+    </div>
+    <div class="nav" id="nav-area"></div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="page-title">Dashboard</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px" id="page-sub">Restaurant Table Reservation System</div>
+      </div>
+      <div class="user-chip">
+        <div id="user-info" style="text-align:right"></div>
+        <div class="avatar" id="user-avatar">JD</div>
+      </div>
+    </div>
+
+    <div class="content" id="content-area">
+      <!-- screens injected here -->
+    </div>
+  </div>
+</div>
+
+<script>
+const roles = {
+  customer: {
+    user: 'John Smith', avatar: 'JS', role: 'Customer',
+    nav: [
+      {id:'dash', label:'Dashboard', icon:'▦'},
+      {id:'availability', label:'Check Availability', icon:'◎'},
+      {id:'make', label:'Make Reservation', icon:'+'},
+      {id:'my', label:'My Reservations', icon:'≡'},
+    ]
+  },
+  staff: {
+    user: 'Sara Lee', avatar: 'SL', role: 'Staff',
+    nav: [
+      {id:'staff-dash', label:'Dashboard', icon:'▦'},
+      {id:'reservations', label:'All Reservations', icon:'≡'},
+      {id:'walkin', label:'Walk-in Booking', icon:'+'},
+      {id:'tables', label:'Table Status', icon:'⊞'},
+    ]
+  },
+  admin: {
+    user: 'Admin User', avatar: 'AU', role: 'Admin',
+    nav: [
+      {id:'admin-dash', label:'Dashboard', icon:'▦'},
+      {id:'all-res', label:'All Reservations', icon:'≡'},
+      {id:'reports', label:'Reports', icon:'◈'},
+      {id:'settings', label:'Settings', icon:'⊙'},
+    ]
+  }
+};
+
+const TABLE_CAPACITY = {
+  'T-01': 2,
+  'T-02': 4,
+  'T-03': 6,
+  'T-04': 4,
+  'T-05': 8,
+};
+
+const INITIAL_RESERVATIONS = [
+  { id: '#5001', customerName: 'John Smith', date: '2026-05-20', time: '18:00', guests: 4, table: 'T-03', status: 'CONFIRMED', request: 'Window seat' },
+  { id: '#5000', customerName: 'Amy Park', date: '2026-05-20', time: '19:00', guests: 2, table: 'T-01', status: 'CONFIRMED', request: '' },
+  { id: '#4999', customerName: 'Walk-in', date: '2026-05-20', time: '12:30', guests: 3, table: 'T-02', status: 'WALK-IN', request: '' },
+  { id: '#4988', customerName: 'John Smith', date: '2026-04-10', time: '19:00', guests: 2, table: 'T-01', status: 'PENDING', request: '' },
+  { id: '#4812', customerName: 'John Smith', date: '2026-03-15', time: '12:00', guests: 6, table: 'T-05', status: 'CANCELLED', request: '' },
+];
+
+const INITIAL_TABLE_STATUSES = {
+  'T-01': 'Available',
+  'T-02': 'Occupied',
+  'T-03': 'Available',
+  'T-04': 'Out of Service',
+  'T-05': 'Available',
+};
+
+const INITIAL_NOTIFICATIONS = [
+  { text: 'New reservation #5001 created', color: '#1D9E75', time: '2 min ago' },
+  { text: 'Reservation #4900 modified', color: '#BA7517', time: '15 min ago' },
+  { text: 'Reservation #4812 cancelled', color: '#E24B4A', time: '1 hr ago' },
+];
+
+function createInitialState() {
+  return {
+    reservations: INITIAL_RESERVATIONS.map(reservation => ({ ...reservation })),
+    tableStatuses: { ...INITIAL_TABLE_STATUSES },
+    notifications: INITIAL_NOTIFICATIONS.map(notification => ({ ...notification })),
+    selectedReservationId: '#5001',
+    nextReservationId: 5002,
+    availabilitySearch: {
+      date: '2026-05-20',
+      time: '18:00',
+      guests: 4,
+      selectedTable: 'T-03',
+    },
+    lastConfirmedReservationId: '#5001',
+  };
+}
+
+let appState = createInitialState();
+
+function getCustomerReservations() {
+  return appState.reservations.filter(reservation => reservation.customerName === 'John Smith');
+}
+
+function getReservationById(id) {
+  return appState.reservations.find(reservation => reservation.id === id);
+}
+
+function getTableCapacity(tableId) {
+  return TABLE_CAPACITY[tableId] || 0;
+}
+
+function getTableDisplayLabel(tableId) {
+  return `${tableId} (${getTableCapacity(tableId)} pax)`;
+}
+
+function getTableOptionLabel(tableId, suffix) {
+  return `${tableId} — ${getTableCapacity(tableId)} pax${suffix ? ` (${suffix})` : ''}`;
+}
+
+function getReservationStatusBadge(status) {
+  const badgeClass = {
+    CONFIRMED: 'badge-green',
+    PENDING: 'badge-amber',
+    CANCELLED: 'badge-red',
+    'WALK-IN': 'badge-blue',
+  }[status] || 'badge-blue';
+  return `<span class="badge ${badgeClass}">${status}</span>`;
+}
+
+function getTableStatusBadge(status) {
+  const badgeClass = {
+    Available: 'badge-green',
+    Occupied: 'badge-red',
+    'Out of Service': 'badge-amber',
+  }[status] || 'badge-blue';
+  return `<span class="badge ${badgeClass}">${status}</span>`;
+}
+
+function getUpcomingReservationCount() {
+  return getCustomerReservations().filter(reservation =>
+    reservation.status === 'CONFIRMED' && reservation.date >= '2026-04-10'
+  ).length;
+}
+
+function renderCustomerReservationRows(withActions = false) {
+  return getCustomerReservations().map(reservation => {
+    const actions = reservation.status === 'CANCELLED'
+      ? `<span style="font-size:11px;color:var(--color-text-tertiary)">—</span>`
+      : `
+        <button class="btn" style="padding:3px 10px;font-size:11px" onclick="openModifyReservation('${reservation.id}')">Modify</button>
+        <button class="btn btn-danger" style="padding:3px 10px;font-size:11px" onclick="openCancelReservation('${reservation.id}')">Cancel</button>
+      `;
+
+    return withActions
+      ? `
+        <tr data-reservation-id="${reservation.id}">
+          <td>${reservation.id}</td><td>${reservation.date}</td><td>${reservation.time}</td><td>${reservation.guests}</td>
+          <td>${getReservationStatusBadge(reservation.status)}</td>
+          <td style="display:flex;gap:6px;padding-top:5px">${actions}</td>
+        </tr>`
+      : `
+        <tr data-reservation-id="${reservation.id}">
+          <td>${reservation.date}</td><td>${reservation.time}</td><td>${reservation.guests}</td><td>${getTableDisplayLabel(reservation.table)}</td><td>${getReservationStatusBadge(reservation.status)}</td>
+        </tr>`;
+  }).join('');
+}
+
+function renderAllReservationRows() {
+  return appState.reservations.map(reservation => `
+    <tr data-reservation-id="${reservation.id}">
+      <td>${reservation.id}</td><td>${reservation.customerName}</td><td>${reservation.date}</td><td>${reservation.time}</td><td>${reservation.guests}</td><td>${reservation.table}</td><td>${getReservationStatusBadge(reservation.status)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderNotifications() {
+  return appState.notifications.slice(0, 3).map((notification, index) => `
+    <div class="notif-item" ${index === 2 ? 'style="border:none"' : ''}>
+      <div class="notif-dot" style="background:${notification.color}"></div>
+      <div>
+        <div class="notif-text">${notification.text}</div>
+        <div class="notif-time">${notification.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTableStatusRows() {
+  return Object.entries(appState.tableStatuses).map(([tableId, status]) => `
+    <tr data-table-id="${tableId}">
+      <td>${tableId}</td>
+      <td>${getTableCapacity(tableId)} pax</td>
+      <td>${getTableStatusBadge(status)}</td>
+      <td>
+        <select style="font-size:11px;padding:3px 6px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary)">
+          ${['Available', 'Occupied', 'Out of Service'].map(option => `<option ${option === status ? 'selected' : ''}>${option}</option>`).join('')}
+        </select>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function setSelectedReservation(id) {
+  appState.selectedReservationId = id;
+}
+
+function openModifyReservation(id) {
+  setSelectedReservation(id);
+  goScreen('modify');
+}
+
+function openCancelReservation(id) {
+  setSelectedReservation(id);
+  goScreen('cancel');
+}
+
+function getSelectedReservation() {
+  return appState.selectedReservationId ? getReservationById(appState.selectedReservationId) : null;
+}
+
+function addNotification(text, color) {
+  appState.notifications.unshift({ text, color, time: 'Just now' });
+}
+
+function getReservationFormValues() {
+  return {
+    date: document.querySelector('input[type="date"]').value,
+    time: document.querySelector('input[type="time"]').value,
+    guests: Number(document.querySelector('input[type="number"]').value),
+    table: document.querySelector('select').value.split(' ')[0],
+    specialRequest: document.querySelector('textarea') ? document.querySelector('textarea').value.trim() : '',
+  };
+}
+
+function prepareReservationFromAvailability() {
+  appState.selectedReservationId = null;
+  goScreen('make');
+}
+
+function saveCustomerReservation() {
+  const values = getReservationFormValues();
+  const reservationId = `#${appState.nextReservationId++}`;
+  appState.reservations.unshift({
+    id: reservationId,
+    customerName: 'John Smith',
+    date: values.date,
+    time: values.time,
+    guests: values.guests,
+    table: values.table,
+    status: 'CONFIRMED',
+    request: values.specialRequest,
+  });
+  appState.lastConfirmedReservationId = reservationId;
+  addNotification(`New reservation ${reservationId} created`, '#1D9E75');
+  goScreen('confirm');
+}
+
+function saveReservationChanges() {
+  const reservation = getSelectedReservation();
+  const values = getReservationFormValues();
+  reservation.date = values.date;
+  reservation.time = values.time;
+  reservation.guests = values.guests;
+  reservation.table = values.table;
+  reservation.request = values.specialRequest;
+  addNotification(`Reservation ${reservation.id} modified`, '#BA7517');
+  goScreen('my');
+}
+
+function confirmCancellation() {
+  const reservation = getSelectedReservation();
+  reservation.status = 'CANCELLED';
+  addNotification(`Reservation ${reservation.id} cancelled`, '#E24B4A');
+  goScreen('my');
+}
+
+function createWalkInReservation() {
+  const textInputs = document.querySelectorAll('input[type="text"]');
+  const reservationId = `#${appState.nextReservationId++}`;
+  appState.reservations.unshift({
+    id: reservationId,
+    customerName: textInputs[0].value || 'Walk-in',
+    date: document.querySelector('input[type="date"]').value,
+    time: document.querySelector('input[type="time"]').value,
+    guests: Number(document.querySelector('input[type="number"]').value),
+    table: document.querySelector('select').value.split(' ')[0],
+    status: 'WALK-IN',
+    request: '',
+  });
+  addNotification(`Walk-in reservation ${reservationId} created`, '#1D9E75');
+  goScreen('reservations');
+}
+
+function saveTableStatuses() {
+  document.querySelectorAll('[data-table-id]').forEach(row => {
+    const tableId = row.getAttribute('data-table-id');
+    appState.tableStatuses[tableId] = row.querySelector('select').value;
+  });
+  addNotification('Table statuses updated', '#185FA5');
+  goScreen('tables');
+}
+
+const screens = {
+  dash: () => `
+    <div class="story-bar">
+      <span style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">User story:</span>
+      <div class="story-pill active">US-01 View Dashboard</div>
+      <div class="story-pill" onclick="goScreen('availability')">US-02 Check Availability ↗</div>
+      <div class="story-pill" onclick="goScreen('make')">US-03 Make Reservation ↗</div>
+    </div>
+    <div class="step-flow">
+      <div class="step done">Login</div><span class="step-arrow">→</span>
+      <div class="step active">Dashboard</div><span class="step-arrow">→</span>
+      <div class="step pending">Check availability</div><span class="step-arrow">→</span>
+      <div class="step pending">Reserve</div><span class="step-arrow">→</span>
+      <div class="step pending">Confirmed</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">My reservations</div><div class="stat-val">${getCustomerReservations().length}</div></div>
+      <div class="stat"><div class="stat-label">Upcoming</div><div class="stat-val">${getUpcomingReservationCount()}</div></div>
+      <div class="stat"><div class="stat-label">Cancelled</div><div class="stat-val">${getCustomerReservations().filter(reservation => reservation.status === 'CANCELLED').length}</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Upcoming reservation</div>
+      <table class="table-list">
+        <thead><tr><th>Date</th><th>Time</th><th>Guests</th><th>Table</th><th>Status</th></tr></thead>
+        <tbody>${renderCustomerReservationRows(false)}</tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="goScreen('availability')">Check Availability ↗</button>
+      <button class="btn" onclick="goScreen('my')">View All Reservations</button>
+    </div>`,
+
+  availability: () => `
+    <div class="story-bar">
+      <div class="story-pill" onclick="goScreen('dash')">US-01 Dashboard</div>
+      <div class="story-pill active">US-02 Check Availability</div>
+      <div class="story-pill" onclick="goScreen('make')">US-03 Make Reservation ↗</div>
+    </div>
+    <div class="step-flow">
+      <div class="step done">Login</div><span class="step-arrow">→</span>
+      <div class="step done">Dashboard</div><span class="step-arrow">→</span>
+      <div class="step active">Check availability</div><span class="step-arrow">→</span>
+      <div class="step pending">Reserve</div><span class="step-arrow">→</span>
+      <div class="step pending">Confirmed</div>
+    </div>
+    <div class="card">
+      <div class="section-title">FR-03 — Search availability</div>
+      <div class="form-row">
+        <div class="form-group"><label>Date</label><input type="date" value="${appState.availabilitySearch.date}"></div>
+        <div class="form-group"><label>Time</label><input type="time" value="${appState.availabilitySearch.time}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Number of guests</label><input type="number" min="1" max="10" value="${appState.availabilitySearch.guests}"></div>
+        <div class="form-group" style="justify-content:flex-end"><button class="btn btn-primary" onclick="showTables()">Search →</button></div>
+      </div>
+    </div>
+    <div id="avail-result"></div>`,
+
+  make: () => `
+    <div class="story-bar">
+      <div class="story-pill" onclick="goScreen('availability')">US-02 Check Availability</div>
+      <div class="story-pill active">US-03 Make Reservation</div>
+      <div class="story-pill" onclick="goScreen('confirm')">US-04 Confirmation ↗</div>
+    </div>
+    <div class="step-flow">
+      <div class="step done">Login</div><span class="step-arrow">→</span>
+      <div class="step done">Dashboard</div><span class="step-arrow">→</span>
+      <div class="step done">Check availability</div><span class="step-arrow">→</span>
+      <div class="step active">Reserve</div><span class="step-arrow">→</span>
+      <div class="step pending">Confirmed</div>
+    </div>
+    <div class="card">
+      <div class="section-title">FR-04 — Reservation details</div>
+      <div class="form-row">
+        <div class="form-group"><label>Date (future only)</label><input type="date" value="${(getSelectedReservation() || appState.availabilitySearch).date}"></div>
+        <div class="form-group"><label>Time (within operating hours)</label><input type="time" value="${(getSelectedReservation() || appState.availabilitySearch).time}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Number of guests (1–10)</label><input type="number" min="1" max="10" value="${(getSelectedReservation() || appState.availabilitySearch).guests}"></div>
+        <div class="form-group"><label>Table</label><select>
+          <option ${((getSelectedReservation() || appState.availabilitySearch).table || appState.availabilitySearch.selectedTable) === 'T-03' ? 'selected' : ''}>${getTableOptionLabel('T-03', 'available')}</option>
+          <option ${((getSelectedReservation() || appState.availabilitySearch).table || appState.availabilitySearch.selectedTable) === 'T-02' ? 'selected' : ''}>${getTableOptionLabel('T-02', 'available')}</option>
+        </select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px"><label>Special request (optional, max 200 chars)</label><textarea placeholder="e.g. window seat, birthday cake...">${getSelectedReservation() ? (getSelectedReservation().request || '') : 'Window seat'}</textarea></div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;color:var(--color-text-secondary);margin-bottom:14px">
+        <strong style="color:var(--color-text-primary)">Validation rules (FR-04):</strong> future date only · within operating hours · guest count ≤ table capacity · table must be available
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="saveCustomerReservation()">Confirm Reservation ↗</button>
+        <button class="btn">Cancel</button>
+      </div>
+    </div>`,
+
+  confirm: () => { const reservation = getReservationById(appState.lastConfirmedReservationId); return `
+    <div class="story-bar">
+      <div class="story-pill active">US-04 Confirmation</div>
+      <div class="story-pill" onclick="goScreen('my')">US-05 View My Reservations ↗</div>
+    </div>
+    <div class="step-flow">
+      <div class="step done">Login</div><span class="step-arrow">→</span>
+      <div class="step done">Dashboard</div><span class="step-arrow">→</span>
+      <div class="step done">Check availability</div><span class="step-arrow">→</span>
+      <div class="step done">Reserve</div><span class="step-arrow">→</span>
+      <div class="step active">Confirmed</div>
+    </div>
+    <div class="confirm-card" style="margin-bottom:14px">
+      <div style="font-size:28px;margin-bottom:8px">✓</div>
+      <div class="confirm-id">#RES-${reservation.id.replace('#', '')}</div>
+      <div class="confirm-sub">Reservation confirmed</div>
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left;font-size:12px;color:#0F6E56">
+        <div><strong>Date:</strong> ${reservation.date}</div>
+        <div><strong>Time:</strong> ${reservation.time}</div>
+        <div><strong>Guests:</strong> ${reservation.guests}</div>
+        <div><strong>Table:</strong> ${getTableDisplayLabel(reservation.table)}</div>
+        <div><strong>Status:</strong> ${reservation.status}</div>
+        <div><strong>Request:</strong> ${reservation.request || 'None'}</div>
+      </div>
+    </div>
+    <div class="highlight-box">FR-05: Confirmation displayed immediately. Reservation stored in database. Staff dashboard notified (FR-08).</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="goScreen('my')">View My Reservations ↗</button>
+      <button class="btn" onclick="goScreen('dash')">Back to Dashboard</button>
+    </div>`; },
+
+  my: () => `
+    <div class="story-bar">
+      <div class="story-pill active">US-05 My Reservations</div>
+      <div class="story-pill" onclick="goScreen('modify')">US-06 Modify ↗</div>
+      <div class="story-pill" onclick="goScreen('cancel')">US-07 Cancel ↗</div>
+    </div>
+    <div class="card">
+      <table class="table-list">
+        <thead><tr><th>ID</th><th>Date</th><th>Time</th><th>Guests</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>${renderCustomerReservationRows(true)}</tbody>
+      </table>
+    </div>`,
+
+  modify: () => { const reservation = getSelectedReservation(); return `
+    <div class="story-bar">
+      <div class="story-pill" onclick="goScreen('my')">← My Reservations</div>
+      <div class="story-pill active">US-06 Modify Reservation</div>
+    </div>
+    <div class="highlight-box">FR-06: Modification allowed only before reservation time.</div>
+    <div class="card">
+      <div class="section-title">Modifying reservation ${reservation.id}</div>
+      <div class="form-row">
+        <div class="form-group"><label>Date</label><input type="date" value="${reservation.date}"></div>
+        <div class="form-group"><label>Time</label><input type="time" value="${reservation.time}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Number of guests</label><input type="number" value="${reservation.guests}" min="1" max="10"></div>
+        <div class="form-group"><label>Table</label><select>
+          <option ${reservation.table === 'T-03' ? 'selected' : ''}>${getTableOptionLabel('T-03', '')}</option>
+          <option ${reservation.table === 'T-02' ? 'selected' : ''}>${getTableOptionLabel('T-02', '')}</option>
+        </select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px"><label>Special request</label><textarea>${reservation.request || ''}</textarea></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="saveReservationChanges()">Save Changes ↗</button>
+        <button class="btn" onclick="goScreen('my')">Discard</button>
+      </div>
+    </div>`;
+  },
+
+  cancel: () => { const reservation = getSelectedReservation(); return `
+    <div class="story-bar">
+      <div class="story-pill" onclick="goScreen('my')">← My Reservations</div>
+      <div class="story-pill active">US-07 Cancel Reservation</div>
+    </div>
+    <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:20px;text-align:center;margin-bottom:14px">
+      <div style="font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">Cancel reservation ${reservation.id}?</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">${reservation.date} at ${reservation.time} · ${reservation.guests} guests · Table ${reservation.table}</div>
+      <div style="font-size:12px;color:#A32D2D;background:#FCEBEB;border-radius:var(--border-radius-md);padding:6px 12px;display:inline-block;margin:10px 0">FR-07: Must be at least 1 hour before reservation time</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+        <button class="btn btn-danger" onclick="confirmCancellation()">Confirm Cancellation</button>
+        <button class="btn" onclick="goScreen('my')">Keep Reservation</button>
+      </div>
+    </div>
+    <div class="highlight-box">After cancellation: table availability updates automatically (FR-07). Staff notified via dashboard (FR-08).</div>`; },
+
+  'staff-dash': () => `
+    <div class="story-bar">
+      <span style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">User story:</span>
+      <div class="story-pill active">US-08 Staff Dashboard</div>
+      <div class="story-pill" onclick="goScreen('walkin')">US-09 Walk-in Booking ↗</div>
+      <div class="story-pill" onclick="goScreen('tables')">US-10 Table Status ↗</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Today's reservations</div><div class="stat-val">12</div></div>
+      <div class="stat"><div class="stat-label">Tables occupied</div><div class="stat-val">5</div></div>
+      <div class="stat"><div class="stat-label">Tables available</div><div class="stat-val">7</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">Notifications (FR-08)</div>
+        ${renderNotifications()}
+      </div>
+      <div class="card">
+        <div class="section-title">Quick actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn" onclick="goScreen('walkin')" style="text-align:left">+ Add walk-in reservation ↗</button>
+          <button class="btn" onclick="goScreen('tables')" style="text-align:left">⊞ Update table status ↗</button>
+          <button class="btn" onclick="goScreen('reservations')" style="text-align:left">≡ View all reservations ↗</button>
+        </div>
+      </div>
+    </div>`,
+
+  reservations: () => `
+    <div class="story-bar">
+      <div class="story-pill active">US-08 All Reservations (Staff)</div>
+    </div>
+    <div class="card">
+      <table class="table-list">
+        <thead><tr><th>ID</th><th>Customer</th><th>Date</th><th>Time</th><th>Guests</th><th>Table</th><th>Status</th></tr></thead>
+        <tbody>${renderAllReservationRows()}</tbody>
+      </table>
+    </div>`,
+
+  walkin: () => `
+    <div class="story-bar">
+      <div class="story-pill" onclick="goScreen('staff-dash')">← Dashboard</div>
+      <div class="story-pill active">US-09 Walk-in Reservation (FR-11)</div>
+    </div>
+    <div class="highlight-box">FR-11: Staff can create reservations for walk-in customers without prior account registration.</div>
+    <div class="card">
+      <div class="section-title">Walk-in booking</div>
+      <div class="form-row">
+        <div class="form-group"><label>Customer name</label><input type="text" placeholder="Walk-in customer name"></div>
+        <div class="form-group"><label>Phone (optional)</label><input type="text" placeholder="0812345678"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date</label><input type="date" value="2026-05-20"></div>
+        <div class="form-group"><label>Time</label><input type="time" value="12:30"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Number of guests</label><input type="number" min="1" max="10" value="3"></div>
+        <div class="form-group"><label>Table</label><select><option>T-02 — 4 pax (available)</option><option>T-04 — 4 pax (available)</option></select></div>
+      </div>
+      <button class="btn btn-primary" onclick="createWalkInReservation()">Create Walk-in Reservation →</button>
+    </div>`,
+
+  tables: () => `
+    <div class="story-bar">
+      <div class="story-pill" onclick="goScreen('staff-dash')">← Dashboard</div>
+      <div class="story-pill active">US-10 Table Status (FR-09)</div>
+    </div>
+    <div class="card">
+      <div class="section-title">FR-09 — Update table status</div>
+      <table class="table-list">
+        <thead><tr><th>Table</th><th>Capacity</th><th>Current Status</th><th>Update</th></tr></thead>
+        <tbody>${renderTableStatusRows()}</tbody>
+      </table>
+      <div style="margin-top:12px"><button class="btn btn-primary" onclick="saveTableStatuses()">Save Status Changes →</button></div>
+    </div>`,
+
+  'admin-dash': () => `
+    <div class="story-bar">
+      <span style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">User story:</span>
+      <div class="story-pill active">US-11 Admin Dashboard</div>
+      <div class="story-pill" onclick="goScreen('reports')">US-12 Reports ↗</div>
+      <div class="story-pill" onclick="goScreen('settings')">US-13 Settings ↗</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Total reservations</div><div class="stat-val">348</div></div>
+      <div class="stat"><div class="stat-label">This month</div><div class="stat-val">42</div></div>
+      <div class="stat"><div class="stat-label">Cancellation rate</div><div class="stat-val">8%</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">Reservation trend (this week)</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:10px">
+          ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d,i)=>{const h=[35,55,45,70,80,95,60][i];return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:100%;background:#5DCAA5;border-radius:3px 3px 0 0;height:${h}%"></div><div style="font-size:9px;color:var(--color-text-tertiary)">${d}</div></div>`;}).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Quick actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn" onclick="goScreen('all-res')" style="text-align:left">≡ View all reservations ↗</button>
+          <button class="btn" onclick="goScreen('reports')" style="text-align:left">◈ Generate reports ↗</button>
+          <button class="btn" onclick="goScreen('settings')" style="text-align:left">⊙ System settings ↗</button>
+        </div>
+      </div>
+    </div>`,
+
+  'all-res': () => `
+    <div class="story-bar">
+      <div class="story-pill active">All Reservations (Admin — GET /admin/reservations)</div>
+    </div>
+    <div class="card">
+      <table class="table-list">
+        <thead><tr><th>ID</th><th>Customer</th><th>Date</th><th>Time</th><th>Guests</th><th>Table</th><th>Status</th></tr></thead>
+        <tbody>${renderAllReservationRows()}</tbody>
+      </table>
+    </div>`,
+
+  reports: () => `
+    <div class="story-bar">
+      <div class="story-pill" onclick="goScreen('admin-dash')">← Dashboard</div>
+      <div class="story-pill active">US-12 Reports & Statistics</div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">Reservations by status</div>
+        ${[['CONFIRMED','#5DCAA5',68],['PENDING','#EF9F27',20],['CANCELLED','#E24B4A',12]].map(([l,c,p])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:${p*1.4}px;height:14px;background:${c};border-radius:3px"></div><span style="font-size:12px;color:var(--color-text-secondary)">${l} ${p}%</span></div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="section-title">Peak hours</div>
+        ${[['12:00–13:00',85],['18:00–19:00',100],['19:00–20:00',92],['20:00–21:00',65]].map(([t,p])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;color:var(--color-text-secondary);width:80px">${t}</span><div style="flex:1;height:10px;background:var(--color-background-secondary);border-radius:3px"><div style="width:${p}%;height:100%;background:#5DCAA5;border-radius:3px"></div></div></div>`).join('')}
+      </div>
+    </div>`,
+
+  settings: () => `
+    <div class="story-bar">
+      <div class="story-pill" onclick="goScreen('admin-dash')">← Dashboard</div>
+      <div class="story-pill active">US-13 Restaurant Settings (FR-12)</div>
+    </div>
+    <div class="card">
+      <div class="section-title">FR-12 — Restaurant profile</div>
+      <div class="form-row">
+        <div class="form-group"><label>Restaurant name</label><input type="text" value="TableReserve Restaurant"></div>
+        <div class="form-group"><label>Contact number</label><input type="text" value="02-123-4567"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Opening time</label><input type="time" value="10:00"></div>
+        <div class="form-group"><label>Closing time</label><input type="time" value="22:00"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px"><label>Address</label><textarea>123 Main Street, Bangkok 10110</textarea></div>
+      <button class="btn btn-primary">Save Settings →</button>
+    </div>`,
+};
+
+let currentRole = 'customer';
+let currentScreen = 'dash';
+
+function switchRole(role, buttonEl) {
+  currentRole = role;
+  const roleButtons = document.querySelectorAll('.role-btn');
+  roleButtons.forEach(b => b.classList.remove('active'));
+  const resolvedButton = buttonEl || Array.from(roleButtons).find(
+    b => b.textContent.trim().toLowerCase() === role
+  );
+  if (resolvedButton) {
+    resolvedButton.classList.add('active');
+  }
+  const cfg = roles[role];
+  document.getElementById('user-avatar').textContent = cfg.avatar;
+  document.getElementById('user-info').innerHTML = `<div style="font-size:12px;font-weight:500;color:var(--color-text-primary)">${cfg.user}</div><div style="font-size:11px;color:var(--color-text-secondary)">${cfg.role}</div>`;
+  renderNav(role);
+  const firstScreen = cfg.nav[0].id;
+  goScreen(firstScreen);
+}
+
+function renderNav(role) {
+  const cfg = roles[role];
+  const nav = document.getElementById('nav-area');
+  nav.innerHTML = cfg.nav.map(item => `
+    <button class="nav-item ${item.id === currentScreen ? 'active' : ''}" onclick="goScreen('${item.id}')">
+      <span class="nav-icon">${item.icon}</span>${item.label}
+    </button>`).join('');
+}
+
+function goScreen(id) {
+  currentScreen = id;
+  const fn = screens[id];
+  if (!fn) return;
+  document.getElementById('content-area').innerHTML = fn();
+  const titles = {
+    dash:'Dashboard', availability:'Check Availability', make:'Make Reservation',
+    confirm:'Booking Confirmed', my:'My Reservations', modify:'Modify Reservation',
+    cancel:'Cancel Reservation','staff-dash':'Staff Dashboard', reservations:'All Reservations',
+    walkin:'Walk-in Booking', tables:'Table Status','admin-dash':'Admin Dashboard',
+    'all-res':'All Reservations','reports':'Reports & Statistics','settings':'System Settings'
+  };
+  document.getElementById('page-title').textContent = titles[id] || id;
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick') === `goScreen('${id}')`);
+  });
+}
+
+function showTables() {
+  appState.availabilitySearch = {
+    date: document.querySelector('input[type="date"]').value,
+    time: document.querySelector('input[type="time"]').value,
+    guests: Number(document.querySelector('input[type="number"]').value),
+    selectedTable: appState.availabilitySearch.selectedTable || 'T-03',
+  };
+  document.getElementById('avail-result').innerHTML = `
+    <div class="card">
+      <div class="section-title">Available tables — ${appState.availabilitySearch.date} at ${appState.availabilitySearch.time} for ${appState.availabilitySearch.guests} guests</div>
+      <div class="avail-grid">
+        <div class="table-card ${appState.availabilitySearch.selectedTable === 'T-02' ? 'selected' : ''}" onclick="selectTable(this,'T-02')"><div class="tc-name">T-02</div><div class="tc-cap">4 pax capacity</div><div class="tc-status"><span class="badge badge-green">Available</span></div></div>
+        <div class="table-card ${appState.availabilitySearch.selectedTable === 'T-03' ? 'selected' : ''}" onclick="selectTable(this,'T-03')"><div class="tc-name">T-03</div><div class="tc-cap">6 pax capacity</div><div class="tc-status"><span class="badge badge-green">Available</span></div></div>
+        <div class="table-card ${appState.availabilitySearch.selectedTable === 'T-05' ? 'selected' : ''}" onclick="selectTable(this,'T-05')"><div class="tc-name">T-05</div><div class="tc-cap">8 pax capacity</div><div class="tc-status"><span class="badge badge-green">Available</span></div></div>
+        <div class="table-card" style="opacity:0.45;cursor:not-allowed"><div class="tc-name">T-01</div><div class="tc-cap">2 pax capacity</div><div class="tc-status"><span class="badge badge-red">Too small</span></div></div>
+      </div>
+      <button class="btn btn-primary" onclick="prepareReservationFromAvailability()">Proceed to Book ↗</button>
+    </div>`;
+}
+
+function selectTable(el, name) {
+  document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  appState.availabilitySearch.selectedTable = name;
+}
+
+switchRole('customer');
+</script>
